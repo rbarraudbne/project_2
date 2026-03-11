@@ -126,5 +126,55 @@ with open(f"{chosen_category}.csv", "w", newline="", encoding="utf-8") as csvfil
         else:
             next_page = None
 
+#définition d'une fonction qui prend l'url  d'une catégorie en paramètre et retourne le fichier csv avec toutes les infos de tous les livres de cette catégorie
 
+def get_category_data(category_url):
+    response = requests.get(category_url)
+    soup = BeautifulSoup(response.content, "html.parser")
+    chosen_category = soup.find("li", class_="active").text.strip()
+
+    with open(f"{chosen_category}.csv", "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+
+        writer.writerow([
+            "UPC",
+            "Title",
+            "Price including tax",
+            "Price excluding tax",
+            "Number available",
+            "Description",
+            "Category",
+            "Review rating",
+            "Image URL"
+        ])
+
+        next_page = category_url
+
+        while next_page:
+
+            response = requests.get(next_page)
+            soup_category = BeautifulSoup(response.content, "html.parser")
+
+            for book in soup_category.find_all("h3"):
+                book_url = "https://books.toscrape.com/catalogue/" + book.a["href"].replace("../../../", "")
+
+                writer.writerow(get_book_data(book_url))
+
+            next_button = soup_category.find("li", class_="next")
+
+            if next_button:
+                page = next_button.find("a")["href"]
+                next_page = category_url.replace("index.html", "") + page
+            else :
+                next_page = None
+
+
+# on va maintenant extraire les données de toutes les catégories
+accueil_url = "https://books.toscrape.com/"
+response_accueil = requests.get(accueil_url)
+soup_accueil = BeautifulSoup(response_accueil.content, 'html.parser')
+
+for category in soup_accueil.select(".nav-list ul li a"):
+    category_url = "https://books.toscrape.com/" + category["href"]
+    get_category_data(category_url)
 
