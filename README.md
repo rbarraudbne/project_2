@@ -26,7 +26,7 @@ Les informations suivantes sont récupérées :
 - Category
 - Review rating
 - Image URL
-- Image path
+- Image
 
 ## Installation
 
